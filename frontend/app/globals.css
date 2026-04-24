@@ -1,0 +1,56 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-wa-primary: #00a884;
+  --color-wa-primary-dark: #008069;
+  --color-wa-bg: #efeae2;
+  --color-wa-panel: #ffffff;
+  --color-wa-panel-alt: #f0f2f5;
+  --color-wa-ink: #111b21;
+  --color-wa-muted: #667781;
+  --color-wa-bubble-out: #d9fdd3;
+  --color-wa-bubble-in: #ffffff;
+  --color-wa-active: #f0f2f5;
+  --color-wa-border: #e9edef;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-wa-panel-alt);
+  color: var(--color-wa-ink);
+  font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--color-wa-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0s !important;
+    transition-duration: 0s !important;
+  }
+}
+
+/* Scrollbar polish for chat columns */
+.wa-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(17, 27, 33, 0.2) transparent;
+}
+.wa-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.wa-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(17, 27, 33, 0.2);
+  border-radius: 3px;
+}

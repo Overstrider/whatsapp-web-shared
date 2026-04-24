@@ -1,0 +1,12 @@
+# codedungeon runtime state (per-project; auto-installed by bootstrap)
+.claude/bin/
+.claude/codedungeon.db*
+.claude/agents/
+.claude/skills/
+.claude/commands/
+.claude/phases/
+.claude/tasks/
+.claude/codereview/
+# Keep .claude/plan/ + .claude/state/ (pipeline outputs worth committing)
+
+# per-language gitignores are in backend/ and frontend/

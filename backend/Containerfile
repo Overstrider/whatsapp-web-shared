@@ -1,0 +1,45 @@
+# Multi-stage Containerfile for whatsapp-web-shared-backend.
+#
+# Build context is expected to be the `backend/` directory itself (unlike the
+# arcplan snippet that assumed repo-root context). Running
+#   podman build -t whatsapp-web-shared:latest -f Containerfile .
+# from inside `backend/` Just Works.
+#
+# Stage 1: compile release binary with rustls-ring (no openssl).
+FROM docker.io/rust:1.84-slim-bookworm AS builder
+WORKDIR /app
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends pkg-config ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+COPY Cargo.toml rust-toolchain.toml ./
+COPY src ./src
+COPY migrations ./migrations
+# NOTE: `.sqlx` (offline query metadata) is not yet generated in the MVP
+# skeleton because every query uses dynamic `sqlx::query*` (not `query!`).
+# When the specialist promotes to macro queries, add:
+#   COPY .sqlx ./.sqlx
+#   ENV SQLX_OFFLINE=true
+RUN cargo build --release --locked || cargo build --release
+
+# Stage 2: minimal runtime with non-root user.
+FROM docker.io/debian:bookworm-slim
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates curl tini \
+ && rm -rf /var/lib/apt/lists/* \
+ && useradd -u 10001 -m -s /usr/sbin/nologin app \
+ && mkdir -p /data /wa-session \
+ && chown -R 10001:10001 /data /wa-session
+
+COPY --from=builder /app/target/release/whatsapp-web-shared-backend /usr/local/bin/app
+COPY migrations /migrations
+
+USER 10001
+ENV DATABASE_URL=sqlite:/data/app.db \
+    WA_SESSION_PATH=/wa-session \
+    BIND_ADDR=0.0.0.0:8080 \
+    RUST_LOG=info,whatsapp_web_shared_backend=debug
+EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+  CMD curl -fsS http://localhost:8080/api/health || exit 1
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["/usr/local/bin/app"]
