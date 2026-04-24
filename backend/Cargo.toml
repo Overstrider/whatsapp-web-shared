@@ -1,0 +1,60 @@
+[package]
+name = "whatsapp-web-shared-backend"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.84"
+
+# NOTE (MVP simplification):
+# - edition pinned to 2021 not 2024 — 2024 edition requires nightly/unstable bits
+#   on older toolchains; 2021 is the safest cargo-check-green default for the
+#   skeleton. Flip to "2024" once the build host confirms 1.84 stable supports it.
+# - whatsapp-rust git dep INTENTIONALLY OMITTED from the skeleton: we do not
+#   want `cargo check` to hit the network or pull an API-churning upstream.
+#   The WaClient trait + StubWaClient keep everything compiling. The real
+#   adapter lives behind a feature flag that pulls the dep back in.
+
+[dependencies]
+axum         = { version = "0.8", features = ["ws", "macros", "tokio", "http1", "json", "query"] }
+axum-extra   = { version = "0.10", features = ["cookie-private", "typed-header"] }
+tokio        = { version = "1.47", features = ["full"] }
+tokio-stream = { version = "0.1", features = ["sync"] }
+tower        = "0.5"
+tower-http   = { version = "0.6", features = ["trace", "cors", "timeout", "limit"] }
+sqlx         = { version = "0.8", default-features = false, features = ["runtime-tokio", "tls-rustls-ring", "sqlite", "uuid", "chrono", "migrate", "macros"] }
+lettre       = { version = "0.11", default-features = false, features = ["smtp-transport", "tokio1-rustls-tls", "builder", "hostname"] }
+argon2       = "0.5"
+phonenumber  = "0.3"
+uuid         = { version = "1.11", features = ["v4", "serde"] }
+chrono       = { version = "0.4", features = ["serde"] }
+serde        = { version = "1", features = ["derive"] }
+serde_json   = "1"
+thiserror    = "2"
+anyhow       = "1"
+tracing      = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+dotenvy      = "0.15"
+rand         = "0.8"
+futures      = "0.3"
+hex          = "0.4"
+base64       = "0.22"
+async-trait  = "0.1"
+arc-swap     = "1"
+time         = "=0.3.41"
+cookie       = "0.18"
+
+[dev-dependencies]
+tokio        = { version = "1.47", features = ["macros", "rt-multi-thread", "test-util"] }
+# reqwest is planned for integration tests once they exist; keep it out of the
+# skeleton tree so we don't drag in cookie_store (which needs newer rustc).
+
+[features]
+default = ["wa_stub"]
+# wa_stub = compile-time swap: StubWaClient becomes the default WaClient impl.
+# Disable default features + enable `wa_real` (TODO) to pull in whatsapp-rust.
+wa_stub = []
+wa_real = []  # placeholder — real adapter not yet implemented
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = "debuginfo"

@@ -1,0 +1,19 @@
+target/
+Cargo.lock.bak
+
+# Local sqlite files — DB lives inside the podman volume in prod.
+*.db
+*.db-wal
+*.db-shm
+
+# Local bind-mount dev dirs (if not using named volumes).
+/data/
+/wa-session/
+
+# Secrets.
+.env
+.env.local
+
+# Editor noise.
+.idea/
+.vscode/
